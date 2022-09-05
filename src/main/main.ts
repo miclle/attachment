@@ -11,6 +11,7 @@
 import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
+import windowStateKeeper from 'electron-window-state';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
@@ -69,10 +70,18 @@ const createWindow = async () => {
     return path.join(RESOURCES_PATH, ...paths);
   };
 
+  const mainWindowState = windowStateKeeper({
+    defaultWidth: 1024,
+    defaultHeight: 728,
+    maximize: false,
+  });
+
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    x: mainWindowState.x,
+    y: mainWindowState.y,
+    width: mainWindowState.width,
+    height: mainWindowState.height,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       sandbox: false,
@@ -81,6 +90,8 @@ const createWindow = async () => {
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
+
+  mainWindowState.manage(mainWindow);
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 
