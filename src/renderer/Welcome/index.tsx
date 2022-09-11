@@ -3,9 +3,14 @@ import { observer } from 'mobx-react-lite';
 import { Button, Card, FloatingLabel, Form } from 'react-bootstrap';
 import { animated, useSpring } from '@react-spring/web';
 
+import { useAppContext } from 'renderer/stores/app-store';
+import { Application } from 'renderer/services';
+
 import './style.scss';
 
 const Welcome = observer(() => {
+  const store = useAppContext();
+
   const styles = useSpring({
     from: {
       opacity: 0,
@@ -17,7 +22,7 @@ const Welcome = observer(() => {
 
   const [validated, setValidated] = useState(false);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.stopPropagation();
     event.preventDefault();
 
@@ -26,18 +31,24 @@ const Welcome = observer(() => {
       return;
     }
 
+    setValidated(true);
+
     const target = event.target as typeof event.target & {
       access_key: { value: string };
       access_secret: { value: string };
     };
 
-    const accessKey = target.access_key.value; // typechecks!
-    const accessSecret = target.access_secret.value; // typechecks!
+    const account = await Application.addAccount({
+      access_key: target.access_key.value,
+      access_secret: target.access_secret.value,
+    });
 
-    // eslint-disable-next-line no-console
-    console.log(accessKey, accessSecret);
+    // eslint-disable-next-line promise/catch-or-return, promise/always-return
+    Application.preferences().then((preference) => {
+      store.setPreferences(preference);
+    });
 
-    setValidated(true);
+    store.setAccount(account);
   };
 
   return (
@@ -54,30 +65,12 @@ const Welcome = observer(() => {
             </Card.Subtitle>
 
             <Form validated={validated} onSubmit={handleSubmit}>
-              <FloatingLabel
-                controlId="floatingKey"
-                label="Access Key"
-                className="mb-4"
-              >
-                <Form.Control
-                  required
-                  type="text"
-                  name="access_key"
-                  placeholder="Access Key"
-                />
+              <FloatingLabel controlId="floatingKey" label="Access Key" className="mb-4">
+                <Form.Control required type="text" name="access_key" placeholder="Access Key" />
               </FloatingLabel>
 
-              <FloatingLabel
-                controlId="floatingSecret"
-                label="Access Secret"
-                className="mb-4"
-              >
-                <Form.Control
-                  required
-                  type="password"
-                  name="access_secret"
-                  placeholder="Access Secret"
-                />
+              <FloatingLabel controlId="floatingSecret" label="Access Secret" className="mb-4">
+                <Form.Control required type="password" name="access_secret" placeholder="Access Secret" />
               </FloatingLabel>
 
               <div className="d-grid gap-2">
