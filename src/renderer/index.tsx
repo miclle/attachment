@@ -6,6 +6,8 @@ import { AppContext, appStore } from 'renderer/stores/app-store';
 import { Application } from './services';
 import App from './App';
 
+import 'antd/dist/antd.css';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

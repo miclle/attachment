@@ -4,7 +4,7 @@ import Store, { Schema } from 'electron-store';
 import { IPreference, IAccount } from 'models';
 
 const name = 'Attachment';
-const uuid = 'b48f500a-ec7a-4df0-9767-4eaf802e9640';
+// const uuid = 'b48f500a-ec7a-4df0-9767-4eaf802e9640';
 
 export const schema: Schema<IPreference> = {
   lang: {
@@ -22,7 +22,7 @@ export default function Preference() {
     schema,
     name,
     fileExtension: '',
-    encryptionKey: uuid,
+    // encryptionKey: uuid,
   });
 }
 
@@ -39,13 +39,7 @@ export const PreferenceHandle = async (_: IpcMainInvokeEvent, op: string, args: 
     }
     case 'addAccount': {
       const { accounts } = preference.store;
-
-      const account: IAccount = {
-        provider: args.provider,
-        access_key: args.access_key,
-        access_secret: args.access_secret,
-      } as IAccount;
-
+      const account: IAccount = args as unknown as IAccount;
       accounts.push(account);
       preference.set('accounts', accounts);
       return account;

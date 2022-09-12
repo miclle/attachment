@@ -1,9 +1,8 @@
-import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Button, Card, FloatingLabel, Form, ListGroup, Placeholder } from 'react-bootstrap';
 import { animated, useSpring } from '@react-spring/web';
+import { Button, Card, Form, Input, List, Select, Skeleton, Typography } from 'antd';
 
 import { IAccount } from 'models';
 import { useAppContext } from 'renderer/stores/app-store';
@@ -36,68 +35,22 @@ const Welcome = observer(() => {
   );
 
   const styles = useSpring({
-    from: {
-      opacity: 0,
-    },
-    to: {
-      opacity: 1,
-    },
+    from: { opacity: 0 },
+    to: { opacity: 1 },
   });
 
-  const [validated, setValidated] = useState(false);
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.stopPropagation();
-    event.preventDefault();
-
-    const form = event.currentTarget;
-    if (form.checkValidity() === false) {
-      return;
-    }
-
-    setValidated(true);
-
-    const target = event.target as typeof event.target & {
-      provider: { value: string };
-      access_key: { value: string };
-      access_secret: { value: string };
-      comment: { value: string };
-    };
-
-    const account = {
-      provider: target.provider.value,
-      access_key: target.access_key.value,
-      access_secret: target.access_secret.value,
-      comment: target.comment.value,
-    };
-
-    await Application.addAccount(account);
-
+  const handleSubmit = async (values: IAccount) => {
+    await Application.addAccount(values);
     await Application.preferences().then((preference) => {
       return store.setPreferences(preference);
     });
-
     refetch();
   };
 
   if (isAccountLoading) {
     return (
       <animated.div id="welcome" style={styles}>
-        <Card style={{ width: '18rem' }}>
-          <Card.Body>
-            <Placeholder as={Card.Title} animation="glow">
-              <Placeholder xs={6} />
-            </Placeholder>
-            <Placeholder as={Card.Text} animation="glow">
-              <Placeholder xs={7} />
-              <Placeholder xs={4} />
-              <Placeholder xs={4} />
-              <Placeholder xs={6} />
-              <Placeholder xs={8} />
-            </Placeholder>
-            <Placeholder.Button variant="primary" xs={6} />
-          </Card.Body>
-        </Card>
+        <Skeleton active />
       </animated.div>
     );
   }
@@ -107,39 +60,47 @@ const Welcome = observer(() => {
       <animated.div id="welcome" style={styles}>
         <div className="welcome-wrap">
           <Card style={{ width: 580, margin: '0 auto', padding: 25 }}>
-            <Card.Body>
-              <Card.Title as="h2" className="text-center mb-4">
-                Attachment
-              </Card.Title>
+            <Typography.Title level={2} style={{ textAlign: 'center' }}>
+              Attachment
+            </Typography.Title>
 
-              <Card.Subtitle className="text-center mb-5">Add an account to get started</Card.Subtitle>
+            <Typography.Title level={5} style={{ textAlign: 'center', marginBottom: 25 }}>
+              Add an account to get started
+            </Typography.Title>
 
-              <Form validated={validated} onSubmit={handleSubmit}>
-                <FloatingLabel controlId="floatingProvider" label="Provider with selects" className="mb-4">
-                  <Form.Select required name="provider">
-                    <option value="QiniuCloud">Qiniu Cloud</option>
-                  </Form.Select>
-                </FloatingLabel>
+            <Form name="basic" layout="vertical" onFinish={handleSubmit} autoComplete="off">
+              <Form.Item label="Provider with selects" name="provider" initialValue="QiniuCloud">
+                <Select size="large">
+                  <Select.Option value="QiniuCloud">Qiniu Cloud</Select.Option>
+                </Select>
+              </Form.Item>
 
-                <FloatingLabel controlId="floatingKey" label="Access Key" className="mb-4">
-                  <Form.Control required type="text" name="access_key" placeholder="Access Key" />
-                </FloatingLabel>
+              <Form.Item
+                label="Access Key"
+                name="access_key"
+                rules={[{ required: true, message: 'Please input your access key!' }]}
+              >
+                <Input size="large" />
+              </Form.Item>
 
-                <FloatingLabel controlId="floatingSecret" label="Access Secret" className="mb-4">
-                  <Form.Control required type="password" name="access_secret" placeholder="Access Secret" />
-                </FloatingLabel>
+              <Form.Item
+                label="Secret Key"
+                name="secret_key"
+                rules={[{ required: true, message: 'Please input your secret key!' }]}
+              >
+                <Input.Password size="large" />
+              </Form.Item>
 
-                <FloatingLabel controlId="floatingComments" label="Comments" className="mb-4">
-                  <Form.Control as="textarea" name="comment" placeholder="Add a comment here" />
-                </FloatingLabel>
+              <Form.Item label="Comments" name="comment">
+                <Input size="large" />
+              </Form.Item>
 
-                <div className="d-grid gap-2">
-                  <Button variant="primary" type="submit" size="lg">
-                    Continue
-                  </Button>
-                </div>
-              </Form>
-            </Card.Body>
+              <Form.Item style={{ marginTop: 35, marginBottom: 0 }}>
+                <Button type="primary" htmlType="submit" block size="large">
+                  Continue
+                </Button>
+              </Form.Item>
+            </Form>
           </Card>
         </div>
       </animated.div>
@@ -150,21 +111,27 @@ const Welcome = observer(() => {
     <animated.div id="welcome" style={styles}>
       <div className="welcome-wrap">
         <Card style={{ width: 580, margin: '0 auto', padding: 25 }}>
-          <Card.Body>
-            <Card.Title as="h2" className="text-center mb-4">
-              Attachment
-            </Card.Title>
+          <Typography.Title level={2} className="text-center mb-4">
+            Attachment
+          </Typography.Title>
 
-            <Card.Subtitle className="text-center mb-5">Select the account.</Card.Subtitle>
+          <Typography.Title level={4} className="text-center mb-5">
+            Select the account.
+          </Typography.Title>
 
-            <ListGroup variant="flush">
-              {accounts.map((account) => (
-                <ListGroup.Item key={account.access_key} action>
-                  {account.access_key}
-                </ListGroup.Item>
-              ))}
-            </ListGroup>
-          </Card.Body>
+          <List
+            itemLayout="horizontal"
+            dataSource={accounts}
+            renderItem={(account) => (
+              <List.Item>
+                <List.Item.Meta
+                  // avatar={<Avatar src="https://joeschmoe.io/api/v1/random" />}
+                  title={<a href="https://ant.design">{account.access_key}</a>}
+                  description={account.comment}
+                />
+              </List.Item>
+            )}
+          />
         </Card>
       </div>
     </animated.div>
