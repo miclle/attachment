@@ -7,6 +7,7 @@ import { Application } from './services';
 import App from './App';
 
 import 'antd/dist/antd.css';
+import './App.scss';
 
 const queryClient = new QueryClient({
   defaultOptions: {

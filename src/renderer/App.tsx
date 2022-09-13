@@ -7,8 +7,6 @@ import zhCN from 'antd/lib/locale/zh_CN';
 import Welcome from './Welcome';
 import Account from './Account';
 
-import './App.scss';
-
 const App = observer(() => {
   return (
     <ConfigProvider locale={zhCN}>
